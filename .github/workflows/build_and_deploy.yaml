@@ -19,6 +19,9 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+        
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
 
       # Build our container
       - run: docker build --tag=public.ecr.aws/o6u7e2l7/bsidesnova2022:${GITHUB_REPOSITORY#*/}-$GITHUB_SHA ./source
@@ -40,6 +43,13 @@ jobs:
 
       # Push to our registry
       - run: docker push public.ecr.aws/o6u7e2l7/bsidesnova2022:${GITHUB_REPOSITORY#*/}-$GITHUB_SHA
+      
+      # Sign our image using the GitHub OIDC Token
+      - name: Sign image with GitHub OIDC
+        run: |-
+           COSIGN_EXPERIMENTAL=1 cosign sign public.ecr.aws/o6u7e2l7/bsidesnova2022:${GITHUB_REPOSITORY#*/}-$GITHUB_SHA
+
+          
 
       # Check out our application's infrastructure repository
       - uses: actions/checkout@v3
